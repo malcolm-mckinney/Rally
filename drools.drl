@@ -226,11 +226,16 @@ rule "Find best buy and worst buy."
        $mech1 : Machine()
        $mech2 : Machine()
                        
-       //The reason why this is so convoluted is because I can not useful declare variables 
-       // in the initialization step or in the eval block. 
-
-
-      //Basically I evaluate each in order then 
+       /* 
+        *The reason why this is so convoluted is because I can not useful declare variables 
+        * in the initialization step or in the eval block. 
+        * Basically, I evaluate each specification to check if mech1 can get a point, and check
+        * at the same time if mech2 has any opportunity to disallow mech1 from getting the point.
+        * Redundancy is needed, because i couldn't find a way to short-circuit the boolean formula.
+        * I think there may be an easier way to attack this problem via multiple rules, 
+        * however I am unsure how to do so.
+        *
+        */ 
 
        eval(
            $mech1 != $mech2 && 
