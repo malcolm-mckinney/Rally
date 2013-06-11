@@ -1,0 +1,269 @@
+import Rally.Machine
+
+
+rule "My machine is loud: No Graphics and High Speed."
+    
+    salience 40
+  
+
+    when 
+        $mech : Machine(card != Rally.Mech.GraphicsCard.none, speed > LOUD_SPEED, !isLoud)
+    then
+        modify ($mech) {
+            isLoud = true 
+        };
+        if ($mech.droolStats) {
+            System.out.println("Machine " + $mech.getName() + " is loud!");
+        }
+end
+
+
+rule "My machine is loud: Big Memory."
+   
+    salience 40
+    
+
+    when 
+        $mech : Machine(memory > LOUD_MEMORY, !isLoud)
+    then
+        modify ($mech) {
+            isLoud = true
+        };
+        if ($mech.droolStats) {
+            System.out.println("Machine " + $mech.getName() + " is loud!");
+        }  
+end
+
+
+rule "My machine is cheap."
+ 
+    salience 40
+    
+
+    when
+        $mech : Machine(price < CHEAP_PRICE, !isCheap)
+    then
+        modify($mech) {
+            isCheap = true
+        };
+        if ($mech.droolStats) {
+            System.out.println("Machine " + $mech.getName() + " is cheap!");
+        }          
+end
+
+
+rule "My machine is expensive."
+  
+    salience 40
+   
+
+    when
+        $mech : Machine(price > EXPENSIVE_PRICE, !isExpensive)  
+    then
+        modify ($mech) {
+            isExpensive = true;
+        };
+        if ($mech.droolStats) {
+            System.out.println("Machine " + $mech.getName() + " is expensive!");
+        } 
+             
+end
+
+
+rule "My machine is hot: Big Memory."
+    
+    salience 40
+
+    when 
+        $mech : Machine(memory > HOT_MEMORY, !isHot)                    
+    then 
+        modify ($mech) {
+        isHot = true 
+        };
+        if ($mech.droolStats) {
+            System.out.println("Machine " + $mech.getName() + " is hot!");
+        } 
+end
+
+
+rule "My machine is hot: High Speed."
+    salience 40
+   
+    when 
+        $mech : Machine(speed > HOT_SPEED, !isHot)         
+    then 
+       modify ($mech) {
+       isHot = true
+       };
+       if ($mech.droolStats) {
+            System.out.println("Machine " + $mech.getName() + " is hot!");
+       } 
+end
+
+rule "My machine can game: Premium Graphics."
+
+    salience 40
+  
+
+    when 
+        $mech : Machine(card == Rally.Mech.GraphicsCard.premium, !canGame)
+      
+    then
+        modify($mech) {
+           canGame = true;
+        }; 
+        if ($mech.droolStats) {
+            System.out.println("Machine " + $mech.getName() + " can game!");
+        } 
+end
+
+
+rule "My machine can game: No Graphics and High Speed."
+
+    salience 40
+   
+
+    when 
+        $mech : Machine(card != Rally.Mech.GraphicsCard.none, speed > GAME_SPEED, !canGame)
+    then 
+        modify($mech) {
+           canGame = true;
+        };
+        if ($mech.droolStats) {
+            System.out.println("Machine " + $mech.getName() + " can game!");
+        } 
+end
+
+
+rule "My machine can crunch numbers: High Speed and Big Memory."
+  
+    salience 40
+
+
+    when 
+        $mech : Machine(speed > CRUNCH_SPEED, memory > CRUNCH_MEMORY, !canCrunchNumbers)
+    then
+         modify($mech) {
+           canCrunchNumbers = true;
+        };
+        if ($mech.droolStats) {
+            System.out.println("Machine " + $mech.getName() + " can crunch numbers!");
+        }      
+end 
+
+
+rule "My machine can crunch numbers: Premium Graphics."
+    
+    salience 40
+
+    when 
+        $mech : Machine(card == Rally.Mech.GraphicsCard.premium, !canCrunchNumbers)      
+    then 
+        modify($mech) {
+           canCrunchNumbers = true
+        }; 
+        if ($mech.droolStats) {
+            System.out.println("Machine " + $mech.getName() + " can crunch numbers!");
+        } 
+end 
+
+rule "My machine is risky." 
+
+    salience 30
+    
+    when 
+        $mech : Machine(isCheap, isHot, !isRisky)      
+    then
+        
+         modify($mech) {
+          
+           isRisky = true
+           
+        };
+        if ($mech.droolStats) {
+            System.out.println("Machine " + $mech.getName() + " is risky!");
+        } 
+end
+
+
+rule "My machine is a safe gaming computer."
+    
+    salience 10
+    when   
+        $mech : Machine(!isRisky, canGame)      
+    then
+        System.out.println("Machine " + $mech.getName() + " is a safe gaming computer!"); 
+end
+
+
+rule "Is there a risky number cruncher?"
+    
+    salience 10
+    when   
+        exists (Machine(isRisky, canCrunchNumbers))      
+    then
+        System.out.println("There is a risky number cruncher!"); 
+end
+
+
+rule "Are all gaming computers hot?"
+    
+    salience 10
+    when   
+        
+        forall( $mech : Machine( canGame) 
+                   Machine( this == $mech, isHot))
+             
+    then
+        System.out.println("All gaming computers are hot!"); 
+end
+
+
+rule "Find best buy and worst buy."
+    salience 20
+
+    when 
+       $mech1 : Machine()
+       $mech2 : Machine()
+                       
+       //The reason why this is so convoluted is because I can not useful declare variables 
+       // in the initialization step or in the eval block. 
+
+
+      //Basically I evaluate each in order then 
+
+       eval(
+           $mech1 != $mech2 && 
+             !$mech1.machineList.contains($mech2) && 
+               ((!$mech1.isRisky && $mech2.isRisky) ? true :
+                   (!($mech1.isRisky && !$mech2.isRisky) && 
+                   ($mech1.isCheap && $mech2.isExpensive)) ? true : 
+                       (!($mech1.isRisky && !$mech2.isRisky) && 
+                        !($mech1.isExpensive && $mech2.isCheap) && 
+                       ($mech1.canGame || $mech1.canCrunchNumbers) && 
+                       !($mech2.canGame || $mech2.canCrunchNumbers)) ? true :
+                           (!($mech1.isRisky && !$mech2.isRisky) && 
+                            !($mech1.isExpensive && $mech2.isCheap) && 
+                            (!($mech1.canGame || $mech1.canCrunchNumbers) &&  
+                            ($mech2.canGame || $mech2.canCrunchNumbers)) && 
+                            ($mech1.canGame && !$mech2.canGame && $mech2.canCrunchNumbers)) ? true : false))
+
+
+     then
+
+        modify($mech1) {
+           machineList.add($mech2);
+           
+        };
+
+         modify($mech1) {
+           score++;
+           
+        };
+       // System.out.println($mech1.getName() + " is a better buy than " + $mech2.getName());
+
+end
+
+
+
+
