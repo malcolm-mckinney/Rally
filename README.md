@@ -1,5 +1,7 @@
-Crazy Train Exercise:
+Rally Software Interview Question:
 ======
+
+Crazy Train Exercize: 
 
 As a savvy computer enthusiast, I’d like to develop a tool to help potential computer
 buyers evaluate the various options and configurations that are available on the
